@@ -1,104 +1,24 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AVT PR - Admin Page</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-        }
-        h1 {
-            font-weight: bold;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-        th, td {
-            border: 1px solid #ccc;
-            padding: 10px;
-            text-align: left;
-        }
-        th {
-            background-color: #f4f4f4;
-        }
-        .alert {
-            color: red;
-            font-weight: bold;
-        }
-    </style>
-</head>
-<body>
-    <h1>AVT PR - Admin Page</h1>
-    <p><strong>Note:</strong> Activation codes allow users to access AVT. Do not share codes with unauthorized persons.</p>
-    <div>
-        <button onclick="generateCode()">Generate Activation Code</button>
-        <button onclick="exportCodes()">Export Codes</button>
-    </div>
-    <p>Total Generated Codes: <span id="total-codes">0</span></p>
-    <table>
-        <thead>
-            <tr>
-                <th>Activation Code</th>
-                <th>Expiration Date</th>
-                <th>Status</th>
-                <th>Action</th>
-            </tr>
-        </thead>
-        <tbody id="codes-table">
-        </tbody>
-    </table>
+<button onclick="generateActivationCode()">Generate Code</button>
+<ul id="generatedCodesList"></ul>
+<script>
+  function generateActivationCode() {
+    const newCode = `AVI-${Math.random().toString(36).substr(2, 3).toUpperCase()}-${Math.random().toString(36).substr(2, 3).toUpperCase()}`;
+    let activationCodes = JSON.parse(localStorage.getItem('activationCodes')) || [];
+    activationCodes.push({
+      code: newCode,
+      used: false,
+      expirationDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+    });
+    localStorage.setItem('activationCodes', JSON.stringify(activationCodes));
+    alert(`Activation Code Generated: ${newCode}`);
+    displayGeneratedCodes();
+  }
 
-    <script>
-        const codes = [];
-
-        function generateCode() {
-            const code = `AVI-${Math.random().toString(36).substr(2, 3).toUpperCase()}-${Math.random().toString(36).substr(2, 3).toUpperCase()}-${Math.random().toString(36).substr(2, 3).toUpperCase()}`;
-            const expirationDate = new Date();
-            expirationDate.setDate(expirationDate.getDate() + 30); // Set expiration to 30 days from now
-
-            codes.push({ code, expiration: expirationDate.toISOString(), used: false });
-
-            alert(`Activation code generated: ${code}\n\nDo not share with anyone.`);
-            updateTable();
-        }
-
-        function updateTable() {
-            const tableBody = document.getElementById('codes-table');
-            tableBody.innerHTML = '';
-
-            codes.forEach((item, index) => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${item.code}</td>
-                    <td>${new Date(item.expiration).toLocaleDateString()}</td>
-                    <td>${item.used ? 'Used' : 'Available'}</td>
-                    <td>
-                        <button onclick="deactivateCode(${index})">Deactivate</button>
-                    </td>
-                `;
-                tableBody.appendChild(row);
-            });
-
-            document.getElementById('total-codes').textContent = codes.length;
-        }
-
-        function deactivateCode(index) {
-            codes[index].used = true;
-            alert(`Code ${codes[index].code} has been deactivated.`);
-            updateTable();
-        }
-
-        function exportCodes() {
-            const blob = new Blob([JSON.stringify(codes)], { type: 'application/json' });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = 'codes.json';
-            link.click();
-        }
-    </script>
-</body>
-</html>
+  function displayGeneratedCodes() {
+    const activationCodes = JSON.parse(localStorage.getItem('activationCodes')) || [];
+    document.getElementById('generatedCodesList').innerHTML = activationCodes
+      .map(code => `<li>${code.code} - ${code.used ? 'Used' : 'Unused'} (Expires: ${new Date(code.expirationDate).toLocaleDateString()})</li>`)
+      .join('');
+  }
+  displayGeneratedCodes();
+</script>
