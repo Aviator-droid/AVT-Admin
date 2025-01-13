@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login Page - Activation</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #e3f2fd;
+      color: #333;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    h1 {
+      color: #1e88e5;
+      margin-bottom: 20px;
+      font-size: 2rem;
+    }
+
+    form {
+      background: #ffffff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      max-width: 400px;
+      width: 90%;
+      text-align: center;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 1rem;
+    }
+
+    button {
+      background-color: #1e88e5;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      cursor: pointer;
+      font-size: 1rem;
+      border-radius: 5px;
+      margin-top: 10px;
+      width: 100%;
+    }
+
+    button:hover {
+      background-color: #1565c0;
+    }
+
+    .container {
+      width: 90%;
+      max-width: 400px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Login - AVT PR</h1>
+    <form onsubmit="event.preventDefault(); validateActivationCode(document.getElementById('activationCode').value);">
+      <input type="text" id="activationCode" placeholder="Enter Activation Code" required>
+      <button type="submit">Activate</button>
+    </form>
+  </div>
+  <script>
+    function validateActivationCode(inputCode) {
+      const activationCodes = JSON.parse(localStorage.getItem('activationCodes')) || [];
+      const codeIndex = activationCodes.findIndex(code => code.code === inputCode && !code.used);
+
+      if (codeIndex !== -1) {
+        const code = activationCodes[codeIndex];
+        if (new Date(code.expirationDate) < Date.now()) {
+          alert('Activation code has expired.');
+        } else {
+          activationCodes[codeIndex].used = true;
+          localStorage.setItem('activationCodes', JSON.stringify(activationCodes));
+          alert('Activation successful! Redirecting...');
+          window.location.href = 'welcome.html';
+        }
+      } else {
+        alert('Invalid or already used activation code.');
+      }
+    }
+  </script>
+</body>
+</html>
