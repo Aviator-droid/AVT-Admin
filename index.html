@@ -53,12 +53,28 @@
       border-radius: 5px;
       box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
       font-size: 0.9rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
 
     .container {
       width: 90%;
       max-width: 600px;
       text-align: center;
+    }
+
+    .btn-deactivate {
+      background-color: #e53935;
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+
+    .btn-deactivate:hover {
+      background-color: #d32f2f;
     }
   </style>
 </head>
@@ -71,23 +87,38 @@
   <script>
     function generateActivationCode() {
       const newCode = `AVI-${Math.random().toString(36).substr(2, 3).toUpperCase()}-${Math.random().toString(36).substr(2, 3).toUpperCase()}`;
+      const expirationDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
       let activationCodes = JSON.parse(localStorage.getItem('activationCodes')) || [];
-      activationCodes.push({
-        code: newCode,
-        used: false,
-        expirationDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-      });
+
+      activationCodes.push({ code: newCode, used: false, expirationDate });
       localStorage.setItem('activationCodes', JSON.stringify(activationCodes));
-      alert(`Activation Code Generated: ${newCode}`);
+
+      alert(`Activation Code Generated: ${newCode}. This key allows access to AVT. Do not share it with anyone.`);
+      displayGeneratedCodes();
+    }
+
+    function deactivateCode(index) {
+      let activationCodes = JSON.parse(localStorage.getItem('activationCodes')) || [];
+      activationCodes[index].used = true;
+      localStorage.setItem('activationCodes', JSON.stringify(activationCodes));
+      alert('Activation code deactivated.');
       displayGeneratedCodes();
     }
 
     function displayGeneratedCodes() {
       const activationCodes = JSON.parse(localStorage.getItem('activationCodes')) || [];
-      document.getElementById('generatedCodesList').innerHTML = activationCodes
-        .map(code => `<li>${code.code} - ${code.used ? 'Used' : 'Unused'} (Expires: ${new Date(code.expirationDate).toLocaleDateString()})</li>`)
+      const list = activationCodes
+        .map(
+          (code, index) => `
+            <li>
+              ${code.code} - ${code.used ? 'Used' : 'Unused'} (Expires: ${new Date(code.expirationDate).toLocaleDateString()})
+              <button class="btn-deactivate" onclick="deactivateCode(${index})" ${code.used ? 'disabled' : ''}>Deactivate</button>
+            </li>`
+        )
         .join('');
+      document.getElementById('generatedCodesList').innerHTML = list;
     }
+
     displayGeneratedCodes();
   </script>
 </body>
